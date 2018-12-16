@@ -8,7 +8,7 @@
 #include <stdlib.h>
 
 #define TESTSIZE (1024*1024)
-#define NRUNS 100
+#define NRUNS 100000
 
 /* binsearch:  find x in v[0] <= v[1] <= ... <= v[n-1] */
 int binsearch_old(int x, int v[], int n)
@@ -36,17 +36,14 @@ int binsearch_new(int x, int v[], int n)
 
 	low = 0;
 	high = n - 1;
-	mid = (low+high) / 2;
-	while (low <= high && x != v[mid]) {
-		mid = (low+high) / 2;
-		if (x < v[mid])
-			high = mid - 1;
+	while (low < high) {
+		mid = (low + high) / 2;
+		if (x <= v[mid])
+			high = mid;
 		else
 			low = mid + 1;
 	}
-	if (x == v[mid])
-		return mid;
-	return -1;  /* no match */
+	return (x == v[low]) ? low : -1;
 }
 
 int main(void)
@@ -59,10 +56,11 @@ int main(void)
 		test[i] = i;
 
 	/* benchmark */
-	double avg_diff = 0;
+	clock_t cum_diff = 0;
 	printf("       x\tclocks_old\tclocks_new\n");
 	printf("------------------------------------------\n");
-	for (int i = 0; i < NRUNS; ++i) {
+	int i;
+	for (i = 0; i < NRUNS; ++i) {
 		/* random search value */
 		int x = rand();
 		x = (int)(x * ((double)TESTSIZE / RAND_MAX));
@@ -71,23 +69,29 @@ int main(void)
 		clock_t start, end;
 		clock_t clocks_old, clocks_new;
 		/* old */
-		start = clock();
-		binsearch_old(x, test, TESTSIZE);
-		end = clock();
-		clocks_old = (end - start);
+		#define TEST_OLD \
+		start = clock();\
+		binsearch_old(x, test, TESTSIZE);\
+		end = clock();\
+		clocks_old = (end - start)
 		/* new */
-		start = clock();
-		binsearch_new(x, test, TESTSIZE);
-		end = clock();
-		clocks_new = (end - start);
-		/* update the average time difference */
-		avg_diff = (avg_diff * i + ((double)clocks_new -
-				(double)clocks_old)) / (i + 1);
+		#define TEST_NEW \
+		start = clock();\
+		binsearch_new(x, test, TESTSIZE);\
+		end = clock();\
+		clocks_new = (end - start)
+		/* repeating the tests seems to remove most of the bias */
+		TEST_OLD;
+		TEST_NEW;
+		TEST_OLD;
+		TEST_NEW;
+		/* update the cumulative time difference */
+		cum_diff += clocks_new - clocks_old;
 
 		printf("%8d\t%10ld\t%10ld\n", x, clocks_old, clocks_new);
 	}
 	printf("------------------------------------------\n");
-	printf("Average difference, clocks: %f\n", avg_diff);
+	printf("Average difference, clocks: %f\n", (double)cum_diff / i);
 
 	return 0;
 }
