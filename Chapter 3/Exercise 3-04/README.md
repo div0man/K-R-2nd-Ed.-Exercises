@@ -13,5 +13,7 @@ In a two's complement number system, the absolute of minimum value is for 1
 greater than the maximum positive value therefore converting largest negative
 value into positive one results in overflow.
 
-The simplest solution is to borrow 1 from any negative number, perform
-everything as before, and put the 1 back at the end.
+At first I thougt it's simplest to borrow 1 from any negative number, perform
+everything as before, and put the 1 back at the end. However, this is not so
+simple when the nuber would end with a 0, so it's simplest to just deal with the
+edge case immediately.
