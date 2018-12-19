@@ -55,10 +55,16 @@ void itoa(int n, char s[])
 /* modified to work with INT_MIN */
 void itoa_mod(int n, char s[])
 {
-	int i, sign;
+	int i = 0;
+	/* deal with the edge case right away, special treatment for 1st digit */
+	if (n == (int)~(~0u >> 1)) {
+		s[i++] = (n % 10) * (n % 10 < 0 ? -1 : 1) + '0';
+		n /= 10;
+	}
+	/* business as usual */
+	int sign;
 	if ((sign = n) < 0)		/* record sign */
-		n = -(n+1);			/* make n positive, borrow 1 to prevent overflow */
-	i = 0;
+		n = -n;				/* make n positive */
 	do {		/* generate digits in reverse order */
 		s[i++] = n % 10 + '0';	/* get next digit */
 	} while ((n /= 10) > 0);	/* delete it */
@@ -66,8 +72,6 @@ void itoa_mod(int n, char s[])
 		s[i++] = '-';
 	s[i] = '\0';
 	reverse(s);
-	if (sign < 0)
-		++s[i-1];		/* put back the borrowed 1 */
 }
 
 /* reverse: reverse string s in place */
