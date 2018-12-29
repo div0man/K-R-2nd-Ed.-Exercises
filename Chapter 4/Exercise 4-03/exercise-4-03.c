@@ -69,7 +69,7 @@ while ((type = getop(s)) != EOF) {
 int sp = 0;				/* next free stack position */
 double val[MAXVAL];		/* value stack */
 
-/* oush: push f onto value stack */
+/* push: push f onto value stack */
 void push(double f)
 {
 	if (sp < MAXVAL)
@@ -78,7 +78,7 @@ void push(double f)
 		printf("error: stack full, can't push %g\n", f);
 }
 
-/* pop: pop and reutrn top value from stack */
+/* pop: pop and return top value from stack */
 double pop(void)
 {
 	if (sp > 0)
@@ -102,6 +102,7 @@ int getop(char s[])
 	while ((s[0] = (char)(c = getch())) == ' ' || c == '\t')
 		;
 	s[1] = '\0';
+	i = 0;
 	if (c == '-') {
 		if ((isdigit(c = getch()) || c == '.')) {
 			s[1] = (char)c;
@@ -111,7 +112,6 @@ int getop(char s[])
 		else {
 			ungetch(c);
 			c = s[0];
-			i = 0;
 		}
 	}
 	if (!isdigit(c) && c != '.')
